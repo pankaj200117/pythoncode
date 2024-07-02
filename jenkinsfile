@@ -1,0 +1,52 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+
+        stage('Checkout') {
+            steps {
+                checkout([$class: 'GitSCM', 
+                          branches: [[name: '*/main']], 
+                          userRemoteConfigs: [[url: 'https://github.com/paulphilip/pythoncode.git']],
+                          extensions: [[$class: 'CloneOption', noTags: false, shallow: true, depth: 1, reference: '', timeout: 10]]])
+            }
+        }
+
+        stage('Hello') {
+            steps {
+                echo 'Hello World'
+                script {
+                    def fNAME = 'John'
+                    def LName = 'Doe'
+                    echo "${fNAME} ${LName}"
+                }
+            }
+        }
+
+        stage('Create Directory and Add Files') {
+            steps {
+                script {
+                    // Create a directory in /home
+                    sh 'sudo mkdir -p /home/mydirectory'
+
+                    // Ensure Jenkins user has permission to write to the directory
+                    sh 'sudo chown -R jenkins:jenkins /home/mydirectory'
+
+                    // Navigate into the directory and add files
+                    dir('/home/mydirectory') {
+                        sh 'touch file1.txt'
+                        sh 'echo "Hello, world!" > file1.txt'
+
+                        // List the files in the directory
+                        sh 'ls -la'
+                    }
+                }
+            }
+        }
+    }
+}
